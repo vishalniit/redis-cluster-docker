@@ -1,0 +1,143 @@
+version: '3.7'
+
+services:
+  redis-node-1:
+    image: redis:5-alpine
+    container_name: redis-node-1
+    hostname: redis-node-1
+    restart: always
+    volumes:
+      - /datadrive/redis/redis_1/:/data
+    deploy:
+      resources:
+        limits:
+          cpus: '0.10'
+          memory: 200M
+        reservations:
+          cpus: '0.05'
+          memory: 50M
+    command: redis-server --requirepass F1tanUusDaII --appendonly yes
+    ports:
+      - 6379
+    networks: 
+      - redis-net-stage
+    privileged: true  
+    security_opt: 
+      - no-new-privileges
+    sysctls:
+      net.core.somaxconn: '10000'
+  redis-node-2:
+    build: ./redis-slaves/5-alpine-slave-2
+    container_name: redis-node-2
+    hostname: redis-node-2
+    restart: always
+    volumes:
+      - /datadrive/redis/redis_2/:/data
+    deploy:
+      resources:
+        limits:
+          cpus: '0.10'
+          memory: 200M
+        reservations:
+          cpus: '0.05'
+          memory: 50M    
+    ports:
+      - 6380
+    depends_on:
+      - redis-node-1
+    networks: 
+      - redis-net-stage
+    privileged: true
+    security_opt: 
+      - no-new-privileges
+    sysctls:
+      net.core.somaxconn: '10000'
+  redis-node-3:
+    build: ./redis-slaves/5-alpine-slave-3
+    container_name: redis-node-3
+    hostname: redis-node-3
+    restart: always
+    volumes:
+      - /datadrive/redis/redis_3/:/data
+    deploy:
+      resources:
+        limits:
+          cpus: '0.10'
+          memory: 200M
+        reservations:
+          cpus: '0.05'
+          memory: 50M
+    ports:
+      - 6381
+    depends_on:
+      - redis-node-1
+      - redis-node-2
+    networks: 
+      - redis-net-stage
+    privileged: true
+    security_opt: 
+      - no-new-privileges
+    sysctls:
+      net.core.somaxconn: '10000'
+  redis-sentinel:
+    build: ./sentinel/5-alpine
+    container_name: redis-sentinel
+    hostname: redis-sentinel
+    restart: always
+    volumes:
+      - /datadrive/redis/sentinel/:/data
+    deploy:
+      resources:
+        limits:
+          cpus: '0.10'
+          memory: 200M
+        reservations:
+          cpus: '0.05'
+          memory: 50M
+    ports:
+      - 26379
+    depends_on:
+      - redis-node-1
+      - redis-node-2
+      - redis-node-3
+    networks:
+      - redis-net-stage
+    privileged: true
+    security_opt: 
+      - no-new-privileges
+    sysctls:
+      net.core.somaxconn: '10000'
+  haproxy-prod-redis:
+    build: ./haproxy
+    hostname: haproxy-prod-redis
+    container_name: haproxy-prod-redis
+    restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: '0.10'
+          memory: 200M
+        reservations:
+          cpus: '0.05'
+          memory: 50M
+    volumes:
+      - ./haproxy/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro  
+    depends_on:
+      - redis-node-1
+      - redis-node-2
+      - redis-node-3
+      - redis-sentinel
+    ports:
+      - '9000:9000'
+      - '6379:6379'
+    environment:
+      - ADMIN_USERNAME=haproxy
+      - ADMIN_PASSWORD=haproxy
+      - REDIS_HOSTS=redis-node-1,redis-node-2,redis-node-3
+    networks: 
+      - redis-net-stage
+    security_opt: 
+      - no-new-privileges
+networks:
+ redis-net-stage:
+  name: Redis-Cluster-stage
