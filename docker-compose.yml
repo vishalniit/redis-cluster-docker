@@ -42,7 +42,7 @@ services:
           cpus: '0.05'
           memory: 50M    
     ports:
-      - 6380
+      - '32786:6380'
     depends_on:
       - redis-node-1
     networks: 
@@ -68,7 +68,7 @@ services:
           cpus: '0.05'
           memory: 50M
     ports:
-      - 6381
+      - '32788:6381'
     depends_on:
       - redis-node-1
       - redis-node-2
