@@ -79,13 +79,13 @@ services:
       - no-new-privileges
     sysctls:
       net.core.somaxconn: '10000'
-  redis-sentinel:
-    build: ./sentinel/5-alpine
-    container_name: redis-sentinel
-    hostname: redis-sentinel
+  redis-sentinel-1:
+    build: ./sentinel-1/5-alpine
+    container_name: redis-sentinel-1
+    hostname: redis-sentinel-1
     restart: always
     volumes:
-      - /datadrive/redis/sentinel/:/data
+      - /datadrive/redis/sentinel-1/:/data
     deploy:
       resources:
         limits:
@@ -100,6 +100,65 @@ services:
       - redis-node-1
       - redis-node-2
       - redis-node-3
+    networks:
+      - redis-net-stage
+    privileged: true
+    security_opt: 
+      - no-new-privileges
+    sysctls:
+      net.core.somaxconn: '10000'
+  redis-sentinel-2:
+    build: ./sentinel-2/5-alpine
+    container_name: redis-sentinel-2
+    hostname: redis-sentinel-2
+    restart: always
+    volumes:
+      - /datadrive/redis/sentinel-2/:/data
+    deploy:
+      resources:
+        limits:
+          cpus: '0.10'
+          memory: 200M
+        reservations:
+          cpus: '0.05'
+          memory: 50M
+    ports:
+      - '26379:26379'
+    depends_on:
+      - redis-node-1
+      - redis-node-2
+      - redis-node-3
+      - redis-sentinel-1
+    networks:
+      - redis-net-stage
+    privileged: true
+    security_opt: 
+      - no-new-privileges
+    sysctls:
+      net.core.somaxconn: '10000'
+  redis-sentinel-3:
+    build: ./sentinel-3/5-alpine
+    container_name: redis-sentinel-3
+    hostname: redis-sentinel-3
+    restart: always
+    volumes:
+      - /datadrive/redis/sentinel-2/:/data
+    deploy:
+      resources:
+        limits:
+          cpus: '0.10'
+          memory: 200M
+        reservations:
+          cpus: '0.05'
+          memory: 50M
+    ports:
+      - '26379:26379'
+    depends_on:
+      - redis-node-1
+      - redis-node-2
+      - redis-node-3
+      - redis-sentinel-1
+      - redis-sentinel-2
     networks:
       - redis-net-stage
     privileged: true
@@ -126,7 +185,9 @@ services:
       - redis-node-1
       - redis-node-2
       - redis-node-3
-      - redis-sentinel
+      - redis-sentinel-1
+      - redis-sentinel-2
+      - redis-sentinel-3
     ports:
       - '9000:9000'
       - '6379:6379'
