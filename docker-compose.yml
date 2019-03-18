@@ -142,7 +142,7 @@ services:
     hostname: redis-sentinel-3
     restart: always
     volumes:
-      - /datadrive/redis/sentinel-2/:/data
+      - /datadrive/redis/sentinel-3/:/data
     deploy:
       resources:
         limits:
