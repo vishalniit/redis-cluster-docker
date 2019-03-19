@@ -43,7 +43,7 @@ services:
           memory: 50M    
     ports:
       - '32786:6379'
-      - '6379:6379'
+      - 6379
     depends_on:
       - redis-node-1
     networks: 
@@ -70,7 +70,7 @@ services:
           memory: 50M
     ports:
       - '32788:6379'
-      - '6379:6379'
+      - 6379
     depends_on:
       - redis-node-1
       - redis-node-2
