@@ -18,7 +18,7 @@ services:
           memory: 50M
     command: redis-server --requirepass F1tanUusDaII --appendonly yes
     ports:
-      - '127.0.0.1:6379-6380:6379'
+      - '127.0.0.1:6380:6379'
     networks: 
       - redis-net-stage
     privileged: true  
@@ -32,7 +32,11 @@ services:
 #    hostname: redis-node-2
     restart: always
     volumes:
-      - /datadrive/redis/redis_2/:/data
+      - type: bind
+        source: /datadrive/redis/redis{{.Task.Slot}}
+        target: /data
+#    volumes:
+#      - /datadrive/redis/redis_2/:/data
     deploy:
       resources:
         limits:
