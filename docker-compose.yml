@@ -13,7 +13,12 @@ volumes:
       type: none
       device: /datadrive/redis/redis-master
       o: bind
-
+  redis-sentinels-volume:
+    driver: local
+    driver_opts:
+      type: none
+      device: /datadrive/redis/redis-sentinels
+      o: bind
 services:
   redis-master:
     image: redis:5-alpine
@@ -42,8 +47,6 @@ services:
       net.core.somaxconn: '10000'
   redis-slave:
     build: ./redis-slaves/5-alpine-slave
-#    container_name: redis-node-2
-#    hostname: redis-node-2
     restart: always
     volumes:
       - redis-slave-volume:/data
@@ -67,13 +70,11 @@ services:
       - no-new-privileges
     sysctls:
       net.core.somaxconn: '10000'  
-  redis-sentinel-1:
-    build: ./sentinel/sentinel-1
-    container_name: redis-sentinel-1
-    hostname: redis-sentinel-1
+  redis-sentinels:
+    build: ./sentinel/5-alpine-sentinel
     restart: always
     volumes:
-      - /datadrive/redis/sentinel-1/:/data
+      - redis-sentinels-volume:/data
     deploy:
       resources:
         limits:
@@ -83,63 +84,10 @@ services:
           cpus: '0.05'
           memory: 50M
     ports:
-      - '127.0.0.1::26379'
+      - '127.0.0.1:26379-263781:26379'
     depends_on:
       - redis-master
       - redis-slave
-    networks:
-      - redis-net-stage
-    privileged: true
-    security_opt: 
-      - no-new-privileges
-  redis-sentinel-2:
-    build: ./sentinel/sentinel-2
-    container_name: redis-sentinel-2
-    hostname: redis-sentinel-2
-    restart: always
-    volumes:
-      - /datadrive/redis/sentinel-2/:/data
-    deploy:
-      resources:
-        limits:
-          cpus: '0.10'
-          memory: 200M
-        reservations:
-          cpus: '0.05'
-          memory: 50M
-    ports:
-      - '127.0.0.1::26379'
-    depends_on:
-      - redis-master
-      - redis-slave
-      - redis-sentinel-1
-    networks:
-      - redis-net-stage
-    privileged: true
-    security_opt: 
-      - no-new-privileges
-  redis-sentinel-3:
-    build: ./sentinel/sentinel-3
-    container_name: redis-sentinel-3
-    hostname: redis-sentinel-3
-    restart: always
-    volumes:
-      - /datadrive/redis/sentinel-3/:/data
-    deploy:
-      resources:
-        limits:
-          cpus: '0.10'
-          memory: 200M
-        reservations:
-          cpus: '0.05'
-          memory: 50M
-    ports:
-      - '127.0.0.1::26379'
-    depends_on:
-      - redis-master
-      - redis-slave
-      - redis-sentinel-1
-      - redis-sentinel-2
     networks:
       - redis-net-stage
     privileged: true
@@ -163,16 +111,14 @@ services:
     depends_on:
       - redis-master
       - redis-slave
-      - redis-sentinel-1
-      - redis-sentinel-2
-      - redis-sentinel-3
+      - redis-sentinels
     ports:
       - '127.0.0.1:9000:9000'
       - '127.0.0.1:6379:6379'
     environment:
       - ADMIN_USERNAME=haproxy
       - ADMIN_PASSWORD=haproxy
-      - REDIS_HOSTS=redis-node-1,redis-node-2,redis-node-3
+      - REDIS_HOSTS=redis-master,redis-slave
     networks: 
       - redis-net-stage
     security_opt: 
