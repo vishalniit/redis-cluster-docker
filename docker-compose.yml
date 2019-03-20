@@ -5,7 +5,7 @@ volumes:
     driver: local
     driver_opts:
       type: none
-      device: /datadrive/redis/redis{{.Task.Slot}}
+      device: /datadrive/redis/redis-slave
       o: bind
 
 services:
