@@ -113,8 +113,8 @@ services:
       - redis-slave
       - redis-sentinels
     ports:
-      - '127.0.0.1:9000:9000'
-      - '127.0.0.1:6379:6379'
+      - '9000:9000'
+      - '6379:6379'
     environment:
       - ADMIN_USERNAME=haproxy
       - ADMIN_PASSWORD=haproxy
