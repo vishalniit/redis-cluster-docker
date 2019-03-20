@@ -1,6 +1,5 @@
 FROM redis:5-alpine
-RUN apt-get update
-RUN apt-get upgrade -y
+RUN apk update && apk upgrade
 ADD sentinel.conf /etc/redis/sentinel.conf
 RUN chown redis:redis /etc/redis/sentinel.conf
 ENV SENTINEL_QUORUM 2
