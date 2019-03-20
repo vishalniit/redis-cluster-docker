@@ -88,6 +88,14 @@ services:
     depends_on:
       - redis-master
       - redis-slave
+    environment:
+      - SENTINEL_QUORUM=2
+      - SENTINEL_DOWN_AFTER=5000
+      - SENTINEL_FAILOVER=5000
+      - MASTER_HOST=redis-master
+      - MASTER_PORT=6379
+      - SENTINEL_PORT=26379
+      - REDIS_PASSWORD=F1tanUusDaII
     networks:
       - redis-net-stage
     privileged: true
