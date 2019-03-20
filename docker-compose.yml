@@ -7,6 +7,12 @@ volumes:
       type: none
       device: /datadrive/redis/redis-slave
       o: bind
+  redis-master-volume:
+    driver: local
+    driver_opts:
+      type: none
+      device: /datadrive/redis/redis-master
+      o: bind
 
 services:
   redis-master:
@@ -15,7 +21,7 @@ services:
     hostname: redis-master
     restart: always
     volumes:
-      - /datadrive/redis/redis_1/:/data
+      - redis-master-volume:/data
     deploy:
       resources:
         limits:
@@ -49,7 +55,7 @@ services:
         reservations:
           cpus: '0.05'
           memory: 50M
-    command: redis-server /etc/redis/redis.conf --slaveof redis-master --requirepass F1tanUusDaII --appendonly yes --masterauth F1tanUusDaII  
+    command: redis-server /etc/redis/redis.conf --slaveof redis-master 6379 --requirepass F1tanUusDaII --appendonly yes --masterauth F1tanUusDaII  
     ports:
       - '127.0.0.1:6381-6385:6379'
     depends_on:
