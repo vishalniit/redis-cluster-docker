@@ -84,7 +84,7 @@ services:
           cpus: '0.05'
           memory: 50M
     ports:
-      - '127.0.0.1:26379-263781:26379'
+      - '127.0.0.1:26379-26381:26379'
     depends_on:
       - redis-master
       - redis-slave

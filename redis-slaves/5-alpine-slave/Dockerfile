@@ -1,5 +1,6 @@
 FROM redis:5-alpine
-
+RUN apt-get update
+RUN apt-get upgrade -y
 COPY  redis.conf /etc/redis/redis.conf
 RUN chown redis:redis /etc/redis/redis.conf
 ENV MASTER_HOST redis-node-1
